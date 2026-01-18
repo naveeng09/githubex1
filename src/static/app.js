@@ -1,5 +1,40 @@
 document.addEventListener("DOMContentLoaded", () => {
   const activitiesList = document.getElementById("activities-list");
+const participantsList = document.getElementById('participants-list');
+
+function renderParticipants(participants) {
+    participantsList.innerHTML = '';
+    participants.forEach(participant => {
+        const li = document.createElement('li');
+        li.innerHTML = `${participant} <button class='delete-btn' data-email='${participant}'>Delete</button>`;
+        participantsList.appendChild(li);
+    });
+}
+
+function deleteParticipant(email) {
+    // Implement the delete functionality here
+    fetch(`/activities/${activity_name}/unregister`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        // Refresh the activities list
+        fetchActivities();
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+participantsList.addEventListener('click', (event) => {
+    if (event.target.classList.contains('delete-btn')) {
+        const email = event.target.getAttribute('data-email');
+        deleteParticipant(email);
+    }
+});
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
@@ -68,6 +103,8 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
+        // Refresh activities to show the new participant
+        fetchActivities();
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";
